@@ -48,63 +48,71 @@ public class ChocolateClient {
 				() -> System.out.println("No valid kcal data found"));
 	}
 
-	/**
-	 * Fetches all pages of chocolates for a given country.
-	 */
+	private static final String BASE_URL = "https://jsonmock.hackerrank.com/api/chocolates";
+	private static final HttpClient CLIENT = HttpClient.newHttpClient();
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-/// --- REFACTOR --- ///
+	// Collect chocolates per country
 	private static List<Chocolate> fetchAllChocolates(String country) {
 		List<Chocolate> allChocolates = new ArrayList<>();
-		HttpClient client = HttpClient.newHttpClient();
-
-		ObjectMapper mapper = new ObjectMapper();
-
 		int currentPage = 1;
 		int totalPages = 1;
 
-		String urlBase = "https://jsonmock.hackerrank.com/api/chocolates";
-		// Encode country for URL safety
 		String encodedCountry = URLEncoder.encode(country, StandardCharsets.UTF_8);
 
 		while (currentPage <= totalPages) {
-			String url = String.format("%s?countryOfOrigin=%s&page=%s", urlBase, encodedCountry, currentPage);
-			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
-
-			HttpResponse<String> response;
-			try {
-				response = client.send(request, HttpResponse.BodyHandlers.ofString());
-			} catch (IOException | InterruptedException e) {
-				System.err.println(String.format("HTTP error on page %s : %s", currentPage, e.getMessage()));
+			String url = buildUrl(encodedCountry, currentPage);
+			String responseBody = fetchPage(url, currentPage);
+			if (responseBody == null)
 				break;
+
+			ChocolateResponse response = parseResponse(responseBody, currentPage);
+			if (response == null)
+				break;
+
+			if (response.getData() != null) {
+				allChocolates.addAll(response.getData());
 			}
 
-			if (response.statusCode() != 200) {
-				System.err.println(
-						String.format("Non-OK HTTP response (%s) on page %s", response.statusCode(), currentPage));
-				break;
-			}
-
-			try {
-				ChocolateResponse chocolateResponse = mapper.readValue(response.body(), ChocolateResponse.class);
-
-				if (chocolateResponse.getData() != null) {
-					allChocolates.addAll(chocolateResponse.getData());
-				}
-
-				totalPages = chocolateResponse.getTotal_pages();
-			} catch (JsonMappingException e) {
-				System.err.println(String.format("JSON mapping error on page %s : %s", currentPage, e.getMessage()));
-				break;
-			} catch (IOException e) {
-				System.err.println(
-						String.format("IO error during JSON parsing on page %s : %s", currentPage, e.getMessage()));
-				break;
-			}
-
+			totalPages = response.getTotal_pages();
 			currentPage++;
 		}
 
 		return allChocolates;
+	}
+
+	// Build URL String from country input
+	private static String buildUrl(String encodedCountry, int page) {
+		return String.format("%s?countryOfOrigin=%s&page=%s", BASE_URL, encodedCountry, page);
+	}
+
+	// Fetch page by country and page number
+	private static String fetchPage(String url, int page) {
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+
+		try {
+			HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+			if (response.statusCode() != 200) {
+				System.err.printf("Non-OK HTTP response (%d) on page %d%n", response.statusCode(), page);
+				return null;
+			}
+			return response.body();
+		} catch (IOException | InterruptedException e) {
+			System.err.printf("HTTP error on page %d: %s%n", page, e.getMessage());
+			return null;
+		}
+	}
+
+	// Parse response
+	private static ChocolateResponse parseResponse(String json, int page) {
+		try {
+			return MAPPER.readValue(json, ChocolateResponse.class);
+		} catch (JsonMappingException e) {
+			System.err.printf("JSON mapping error on page %d: %s%n", page, e.getMessage());
+		} catch (IOException e) {
+			System.err.printf("IO error during JSON parsing on page %d: %s%n", page, e.getMessage());
+		}
+		return null;
 	}
 
 	// Optional because some Chocolate objects have no NutritionalInformation field

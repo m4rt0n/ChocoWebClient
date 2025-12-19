@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Scanner;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,15 +18,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ChocolateClient {
 	public static void main(String[] args) {
 		// Read country from console
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("Enter country of origin: ");
-		String country = scanner.nextLine().trim();
-		scanner.close();
-
-		if (country.isEmpty()) {
-			System.out.println("Country cannot be empty.");
-			return;
-		}
+		ConsoleReader cReader = new ConsoleReader();
+		String country = cReader.readInputCountry();
 
 		List<Chocolate> chocolates = fetchAllChocolates(country);
 

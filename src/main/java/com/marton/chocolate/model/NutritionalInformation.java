@@ -1,4 +1,4 @@
-package com.marton.chocolate;
+package com.marton.chocolate.model;
 
 import lombok.Data;
 

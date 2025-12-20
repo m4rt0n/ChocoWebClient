@@ -10,6 +10,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.marton.chocolate.model.Chocolate;
+import com.marton.chocolate.model.NutritionalInformation;
+
 public class ChocolateClientUnitTest {
 
 	@Test

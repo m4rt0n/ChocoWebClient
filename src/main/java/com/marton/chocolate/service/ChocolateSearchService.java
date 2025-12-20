@@ -1,4 +1,4 @@
-package com.marton.chocolate;
+package com.marton.chocolate.service;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marton.chocolate.model.Chocolate;
 
 public class ChocolateSearchService {
 	private static final String BASE_URL = "https://jsonmock.hackerrank.com/api/chocolates";

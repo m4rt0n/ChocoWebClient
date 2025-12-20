@@ -1,8 +1,10 @@
-package com.marton.chocolate;
+package com.marton.chocolate.service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
+import com.marton.chocolate.model.Chocolate;
 
 public class ChocolateOperation {
 
@@ -16,16 +18,6 @@ public class ChocolateOperation {
 		return chocolates.stream().filter(c -> c.getNutritionalInformation() != null)
 				.filter(c -> c.getNutritionalInformation().getKcal() != null)
 				.max(Comparator.comparingInt(c -> c.getNutritionalInformation().getKcal()));
-	}
-
-	// chocolates.forEach(ch -> System.out.println(ch));
-
-	// Get the most nutritious chocolate per given country
-	public void printHindHighestKcalChocolate(Optional<Chocolate> chocolate) {
-		chocolate.ifPresentOrElse(
-				c -> System.out.println(String.format("Highest kcal chocolate: %s %s : %s kcal", c.getBrand(),
-						c.getType(), c.getNutritionalInformation().getKcal())),
-				() -> System.out.println("No valid kcal data found"));
 	}
 
 }

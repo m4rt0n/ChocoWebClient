@@ -1,6 +1,8 @@
-package com.marton.chocolate;
+package com.marton.chocolate.service;
 
 import java.util.List;
+
+import com.marton.chocolate.model.Chocolate;
 
 import lombok.Data;
 

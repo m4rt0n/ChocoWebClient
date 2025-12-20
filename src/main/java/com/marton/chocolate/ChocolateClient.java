@@ -3,6 +3,12 @@ package com.marton.chocolate;
 import java.util.List;
 import java.util.Optional;
 
+import com.marton.chocolate.model.Chocolate;
+import com.marton.chocolate.presentation.ConsoleReader;
+import com.marton.chocolate.presentation.OutputPrinter;
+import com.marton.chocolate.service.ChocolateOperation;
+import com.marton.chocolate.service.ChocolateSearchService;
+
 public class ChocolateClient {
 	public static void main(String[] args) {
 		// Read country from console
@@ -14,6 +20,9 @@ public class ChocolateClient {
 
 		ChocolateOperation chocolateOperation = new ChocolateOperation();
 		Optional<Chocolate> chocolateOptionalHighest = chocolateOperation.findHighestKcalChocolate(chocolates);
-		chocolateOperation.printHindHighestKcalChocolate(chocolateOptionalHighest);
+
+		OutputPrinter outputPrinter = new OutputPrinter();
+
+		outputPrinter.printFindHighestKcalChocolate(chocolateOptionalHighest);
 	}
 }

@@ -8,9 +8,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marton.chocolate.model.Chocolate;
 
@@ -20,7 +21,7 @@ public class ChocolateSearchService {
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	// Collect chocolates per country
-	public List<Chocolate> fetchAllChocolates(String country) {
+	public List<Chocolate> fetchAllChocolates(String country) throws IOException {
 		List<Chocolate> allChocolates = new ArrayList<>();
 		int currentPage = 1;
 		int totalPages = 1;
@@ -30,12 +31,8 @@ public class ChocolateSearchService {
 		while (currentPage <= totalPages) {
 			String url = buildUrl(encodedCountry, currentPage);
 			String responseBody = fetchPage(url, currentPage);
-			if (responseBody == null)
-				break;
 
 			ChocolateResponse response = parseResponse(responseBody, currentPage);
-			if (response == null)
-				break;
 
 			if (response.getData() != null) {
 				allChocolates.addAll(response.getData());
@@ -47,7 +44,7 @@ public class ChocolateSearchService {
 
 		if (allChocolates.isEmpty()) {
 			System.out.println("No chocolates found for country: " + country);
-			return null;
+			return Collections.emptyList();
 		}
 		// Print results
 		System.out.println(String.format("Total %s chocolates found from %s", allChocolates.size(), country));
@@ -60,32 +57,33 @@ public class ChocolateSearchService {
 	}
 
 	// Fetch page by country and page number
-	public String fetchPage(String url, int page) {
+	public String fetchPage(String url, int page) throws IOException {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
 
 		try {
 			HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-			if (response.statusCode() != 200) {
-				System.err.printf("Non-OK HTTP response (%d) on page %d%n", response.statusCode(), page);
-				return null;
+
+			if (response.body().isEmpty()) {
+				throw new IOException(String.format("Empty response body from %s", url));
+			} else {
+				if (response.statusCode() != 200) {
+					throw new IOException(
+							String.format("Non-OK HTTP response %s on page %s", response.statusCode(), page));
+				}
+				return response.body();
 			}
-			return response.body();
-		} catch (IOException | InterruptedException e) {
-			System.err.printf("HTTP error on page %d: %s%n", page, e.getMessage());
-			return null;
+		} catch (Exception e) {
+			throw new IOException(String.format("HTTP error on page %d: %s%n", page, e.getMessage()));
 		}
 	}
 
-	// Parse response
-	public ChocolateResponse parseResponse(String json, int page) {
+	// Parse JSON response to ChocolateResponse POJO
+	public ChocolateResponse parseResponse(String json, int page) throws IOException {
 		try {
 			return MAPPER.readValue(json, ChocolateResponse.class);
-		} catch (JsonMappingException e) {
-			System.err.printf("JSON mapping error on page %d: %s%n", page, e.getMessage());
-		} catch (IOException e) {
-			System.err.printf("IO error during JSON parsing on page %d: %s%n", page, e.getMessage());
+		} catch (JsonProcessingException e) {
+			throw new IOException(String.format("JSON mapping/parsing error on page %d: %s%n", page, e.getMessage()));
 		}
-		return null;
 	}
 
 }

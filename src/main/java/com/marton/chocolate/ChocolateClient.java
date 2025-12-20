@@ -1,5 +1,6 @@
 package com.marton.chocolate;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +11,7 @@ import com.marton.chocolate.service.ChocolateOperation;
 import com.marton.chocolate.service.ChocolateSearchService;
 
 public class ChocolateClient {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// Read country from console
 		ConsoleReader consoleReader = new ConsoleReader();
 		String country = consoleReader.readInputCountry();

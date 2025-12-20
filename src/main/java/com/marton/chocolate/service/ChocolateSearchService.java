@@ -38,7 +38,7 @@ public class ChocolateSearchService {
 				allChocolates.addAll(response.getData());
 			}
 
-			totalPages = response.getTotal_pages();
+			totalPages = response.getTotalPages();
 			currentPage++;
 		}
 
